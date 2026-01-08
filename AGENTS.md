@@ -40,4 +40,4 @@
 | Gemini | Gemini | gemini-code-assist@users.noreply.github.com |
 
 
-# Agent Template Developed by Heartran (https://github.com/heartran/)
+Agent Template Developed by Heartran (https://github.com/heartran/)
