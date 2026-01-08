@@ -1,6 +1,6 @@
-# Kanka MCP Server
+# MCP Server
 
-Minimal Model Context Protocol (MCP) proxy for the Kanka REST API using Node.js and Express.
+Minimal Model Context Protocol (MCP) proxy for the REST API using Node.js and Express.
 
 ## Setup
 
@@ -15,13 +15,13 @@ Minimal Model Context Protocol (MCP) proxy for the Kanka REST API using Node.js 
 - HTTP / Streamable MCP: `PORT=5000 npm start` (defaults to `5000`). You can pass `?token=<your_token>` on the first call if you do not want to rely on the env var.
 
 ## OAuth helper endpoints
-- `GET /oauth/login`: redirect to Kanka for OAuth consent (requires `KANKA_CLIENT_ID` and `KANKA_REDIRECT_URI`).
+- `GET /oauth/login`: redirect to provider for OAuth consent (requires `KANKA_CLIENT_ID` and `KANKA_REDIRECT_URI`).
 - `GET /oauth/callback`: exchanges the returned `code` for `access_token` and `refresh_token` and returns the payload.
 - `GET /.well-known/oauth-authorization-server`: OAuth metadata for MCP clients.
-- `GET /oauth/authorize`: starts OAuth flow (proxying through Kanka at `app.kanka.io`).
+- `GET /oauth/authorize`: starts OAuth flow (proxying through provider at `app.kanka.io`).
 - `POST /oauth/token`: exchanges authorization codes (and refresh tokens) for access tokens via `app.kanka.io`.
 
-You can also override Kanka OAuth settings per request by passing `kanka_client_id`, `kanka_client_secret`, `kanka_redirect_uri`, and/or `scope` as query parameters (authorize/login) or form fields (token). When omitted, no scope is sent to Kanka (recommended).
+You can also override provider OAuth settings per request by passing `kanka_client_id`, `kanka_client_secret`, `kanka_redirect_uri`, and/or `scope` as query parameters (authorize/login) or form fields (token). When omitted, no scope is sent to provider (recommended).
 
 ## MCP endpoints
 
@@ -41,3 +41,6 @@ Token handling:
 - Set `KANKA_API_TOKEN` in the environment for a default token.
 - Pass `apiToken` in tool arguments for per-call tokens.
 - Supply `Authorization: Bearer <token>` (preferred) or `?token=<token>` when initiating HTTP/SSE sessions if you prefer per-session tokens.
+
+Environment
+- Set provider API tokens in environment variables or in `config.js` as needed per provider.

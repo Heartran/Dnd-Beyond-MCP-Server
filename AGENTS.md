@@ -6,14 +6,14 @@
 
 - Install deps: `npm install` (Node 20+).
 - Start server: `npm start`.
-- Environment: Set `KANKA_API_TOKEN` in environment variables or `config.js`.
+- Environment: Set provider API tokens in environment variables or `config.js`.
 
 ## Coding Style & Naming Conventions
 - Default to 2-space indentation in TS/JS/CSS, UTF-8 text, and trailing newlines. Use PascalCase for types/classes, camelCase for variables/functions, kebab-case for asset filenames, and snake_case for data/config files.
 - Add lint/format tooling per stack (ESLint/Prettier for JS/TS, EditorConfig for mixed languages) and run before commits. Keep design docs concise and date-stamped inside the document.
 
 - Place tests in `tests/` directory if added.
-- Keep runs deterministic; avoid unnecessary real network calls in unit tests (use mocks for Kanka API).
+- Keep runs deterministic; avoid unnecessary real network calls in unit tests (use mocks for external APIs).
 - Document manual verification steps for new MCP endpoints.
 
 ## Commit & Pull Request Guidelines

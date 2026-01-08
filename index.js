@@ -9,6 +9,8 @@ import {
   KANKA_REDIRECT_URI,
 } from "./config.js";
 import { createHash, randomUUID } from "node:crypto";
+import bodyParser from 'body-parser';
+const providers = require('./src/providers');
 
 const sdk = await loadSdk();
 
@@ -282,6 +284,8 @@ if (useStdio) {
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
+  app.use(bodyParser.json());
+
   const handleMcpRequest = async (req, res) => {
     try {
       const sessionIdHeader = req.headers["mcp-session-id"];
@@ -776,6 +780,29 @@ if (useStdio) {
     } else {
       console.error(`[${sessionId}] POST Failed: Session unknown or expired.`);
       res.status(400).send("Session not found");
+    }
+  });
+
+  // Providers discovery
+  app.get('/providers', (req, res) => {
+    res.json(providers.listProviders());
+  });
+
+  app.get('/providers/:id/tools', (req, res) => {
+    const p = providers.getProvider(req.params.id);
+    if (!p) return res.status(404).json({ error: 'provider not found' });
+    res.json(p.tools);
+  });
+
+  app.post('/providers/:id/call', async (req, res) => {
+    const p = providers.getProvider(req.params.id);
+    if (!p) return res.status(404).json({ error: 'provider not found' });
+    try {
+      const result = await p.callTool(req.body.name, req.body.args || {});
+      res.json({ result });
+    } catch (err) {
+      console.error(err);
+      res.status(400).json({ error: String(err) });
     }
   });
 
