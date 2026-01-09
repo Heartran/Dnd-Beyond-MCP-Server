@@ -1,28 +1,27 @@
-const slugify = (s) => (s || 'unnamed').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+function slugify(s = 'unnamed') {
+  return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
 
-function normalizeDdbCharacter(raw) {
-  // baseline, resilient mapping from typical DDB-like blobs
+function normalizeDdbCharacter(raw = {}) {
   const identity = {
-    id: raw.id || null,
+    id: raw.id || raw.character?.id || null,
     name: raw.name || raw.character?.name || 'Unknown',
-    race: raw.race || raw.character?.race || raw.race_name || '',
-    classes: raw.classes || raw.character?.classes || (raw.class ? [raw.class] : []),
-    background: raw.background || raw.character?.background || '',
+    race: raw.race || raw.character?.race || '',
+    classes: raw.classes || raw.character?.classes || [],
+    background: raw.background || '',
   };
 
-  const statsSource = raw.abilities || raw.ability_scores || raw.stats || {};
+  const abilities = raw.abilities || raw.ability_scores || {};
   const statCore = {
-    STR: statsSource.Strength ?? statsSource.str ?? 10,
-    DEX: statsSource.Dexterity ?? statsSource.dex ?? 10,
-    CON: statsSource.Constitution ?? statsSource.con ?? 10,
-    INT: statsSource.Intelligence ?? statsSource.int ?? 10,
-    WIS: statsSource.Wisdom ?? statsSource.wis ?? 10,
-    CHA: statsSource.Charisma ?? statsSource.cha ?? 10,
-    mod: {}, // computed mods
+    STR: abilities.Strength ?? abilities.str ?? 10,
+    DEX: abilities.Dexterity ?? abilities.dex ?? 10,
+    CON: abilities.Constitution ?? abilities.con ?? 10,
+    INT: abilities.Intelligence ?? abilities.int ?? 10,
+    WIS: abilities.Wisdom ?? abilities.wis ?? 10,
+    CHA: abilities.Charisma ?? abilities.cha ?? 10,
+    mod: {},
   };
-  for (const k of ['STR','DEX','CON','INT','WIS','CHA']) {
-    statCore.mod[k] = Math.floor((statCore[k] - 10) / 2);
-  }
+  ['STR','DEX','CON','INT','WIS','CHA'].forEach(k => { statCore.mod[k] = Math.floor((statCore[k]-10)/2); });
 
   const combat = {
     AC: raw.ac ?? raw.armor_class ?? null,
@@ -32,21 +31,16 @@ function normalizeDdbCharacter(raw) {
       temp: raw.hp_temp ?? 0,
     },
     initiative: raw.initiative ?? null,
-    speed: raw.speed ?? (raw.movement && raw.movement.walk) || null,
+    speed: raw.speed ?? null,
   };
 
-  const skills = raw.skills || {};
-  const resources = raw.resources || {};
   const equipment = Array.isArray(raw.items) ? raw.items.map(i => ({ name: i.name, qty: i.qty || 1, attuned: !!i.attuned, notes: i.notes || '' })) : [];
-
   const spells = Array.isArray(raw.spells) ? raw.spells.map(s => ({ name: s.name, level: s.level, prepared: !!s.prepared })) : [];
 
   return {
     identity,
     statCore,
     combat,
-    skills,
-    resources,
     equipment,
     spells,
     _raw: raw,
@@ -54,6 +48,4 @@ function normalizeDdbCharacter(raw) {
   };
 }
 
-module.exports = {
-  normalizeDdbCharacter,
-};
+module.exports = { normalizeDdbCharacter };

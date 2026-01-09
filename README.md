@@ -44,3 +44,29 @@ Token handling:
 
 Environment
 - Set provider API tokens in environment variables or in `config.js` as needed per provider.
+
+Getting started
+- Install dependencies: npm install
+- Start server: npm start
+
+Providers
+This server exposes a list of providers and their tools:
+
+- GET /providers
+  - returns available providers (id, name, description)
+- GET /providers/:id/tools
+  - returns tools exposed by a provider
+- POST /providers/:id/call
+  - body: { name: string, args?: object }
+  - calls a provider tool
+
+Example: import a D&D Beyond character (manual JSON import)
+curl -X POST http://localhost:3000/providers/ddb/call -H "Content-Type: application/json" -d '{"name":"ddb_import_character_json","args":{"json": <paste character JSON here>}}'
+
+Use the returned id for subsequent calls:
+- character_get_overview
+- character_list_spells
+- character_list_inventory
+- character_export_markdown
+
+If additional providers (e.g. Open5e) are added later, they will be listed via GET /providers.

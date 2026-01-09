@@ -5,12 +5,16 @@
   "description": "Minimal MCP-style proxy server for the Kanka REST API.",
   "scripts": {
     "start": "node index.js",
-    "test": "node test/run-tests.js"
+    "test": "jest --runInBand",
+    "find-kanka": "node scripts/find-kanka.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
   }
 }
