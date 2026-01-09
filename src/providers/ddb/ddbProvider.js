@@ -1,6 +1,6 @@
-const { normalizeDdbCharacter } = require('../../models/character');
-const { saveCharacter, loadCharacter } = require('../../storage/characterStore');
-const { v4: uuidv4 } = require('uuid');
+import { normalizeDdbCharacter } from '../../models/character.js';
+import { saveCharacter, loadCharacter } from '../../storage/characterStore.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const provider = {
   id: 'ddb',
@@ -68,4 +68,4 @@ const provider = {
   },
 };
 
-module.exports = provider;
+export default provider;

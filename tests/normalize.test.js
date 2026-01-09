@@ -1,5 +1,5 @@
-const { normalizeDdbCharacter } = require('../src/models/character');
-const fixture = require('./fixtures/ddb_example.json');
+import { normalizeDdbCharacter } from '../src/models/character.js';
+import fixture from './fixtures/ddb_example.json' assert { type: 'json' };
 
 test('normalizeDdbCharacter maps key fields', () => {
   const n = normalizeDdbCharacter(fixture);

@@ -2,7 +2,7 @@ function slugify(s = 'unnamed') {
   return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
-function normalizeDdbCharacter(raw = {}) {
+export function normalizeDdbCharacter(raw = {}) {
   const identity = {
     id: raw.id || raw.character?.id || null,
     name: raw.name || raw.character?.name || 'Unknown',
@@ -47,5 +47,3 @@ function normalizeDdbCharacter(raw = {}) {
     slug: slugify(identity.name) + (identity.id ? `-${identity.id}` : ''),
   };
 }
-
-module.exports = { normalizeDdbCharacter };

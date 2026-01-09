@@ -1,6 +1,12 @@
-const fs = require('fs');
-const path = require('path');
-const { promisify } = require('util');
+import fs from 'fs';
+import path from 'path';
+import { promisify } from 'util';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const mkdir = promisify(fs.mkdir);
 const writeFile = promisify(fs.writeFile);
 const readFile = promisify(fs.readFile);
@@ -10,21 +16,17 @@ async function ensureDir() {
   await mkdir(DATA_DIR, { recursive: true });
 }
 
-async function saveCharacter(id, obj) {
+export async function saveCharacter(id, obj) {
   await ensureDir();
   const file = path.join(DATA_DIR, `${id}.json`);
   await writeFile(file, JSON.stringify(obj, null, 2), 'utf8');
   return file;
 }
 
-async function loadCharacter(id) {
+export async function loadCharacter(id) {
   const file = path.join(DATA_DIR, `${id}.json`);
   const raw = await readFile(file, 'utf8');
   return JSON.parse(raw);
 }
 
-module.exports = {
-  saveCharacter,
-  loadCharacter,
-  DATA_DIR,
-};
+export { DATA_DIR };

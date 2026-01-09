@@ -1,9 +1,17 @@
-const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-const providers = require('../src/providers');
-const fixture = require('../tests/fixtures/ddb_example.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+import providers from '../src/providers/index.js';
+
+// Read fixture
+const fixturePath = path.join(__dirname, '..', 'tests', 'fixtures', 'ddb_example.json');
+const fixture = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
 
 (async () => {
   try {
@@ -11,7 +19,7 @@ const fixture = require('../tests/fixtures/ddb_example.json');
     const provider = providers.getProvider('ddb');
     assert(provider, 'ddb provider registered');
 
-    const { result } = await provider.callTool('ddb_import_character_json', { json: fixture });
+    const result = await provider.callTool('ddb_import_character_json', { json: fixture });
     assert(result.id, 'returned id');
     assert(result.character.identity.name === 'Lira Swift', 'name normalized');
     assert(result.character.statCore.STR === 8, 'STR preserved');

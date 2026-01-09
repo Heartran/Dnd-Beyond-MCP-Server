@@ -1,6 +1,8 @@
 // Provider registry for D&D Beyond MCP Server
 // Add new providers here by requiring and registering them
 
+import ddb from './ddb/ddbProvider.js';
+
 const providers = new Map();
 
 function register(provider) {
@@ -24,10 +26,9 @@ function getProvider(id) {
 }
 
 // Register D&D Beyond provider
-const ddb = require('./ddb/ddbProvider');
 register(ddb);
 
-module.exports = {
+export default {
   register,
   listProviders,
   getProvider,
