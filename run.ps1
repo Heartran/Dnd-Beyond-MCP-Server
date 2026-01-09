@@ -1,8 +1,8 @@
 function Start-Server {
   git pull
   npm install
-  tailscale funnel 5000
-  $env:PORT = "5000"
+  tailscale funnel 5020
+  $env:PORT = "5020"
   Start-Process -FilePath node -ArgumentList "index.js" -PassThru -NoNewWindow
 }
 
