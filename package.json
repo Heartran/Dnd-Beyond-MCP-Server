@@ -1,12 +1,11 @@
 {
-  "name": "kanka-mcp",
+  "name": "dnd-beyond-mcp-server",
   "version": "0.1.0",
   "type": "module",
-  "description": "Minimal MCP-style proxy server for the Kanka REST API.",
+  "description": "MCP server for TTRPG providers (D&D Beyond JSON import + extensible providers)",
   "scripts": {
     "start": "node index.js",
-    "test": "jest --runInBand",
-    "find-kanka": "node scripts/find-kanka.js"
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",

@@ -60,13 +60,10 @@ This server exposes a list of providers and their tools:
   - body: { name: string, args?: object }
   - calls a provider tool
 
-Example: import a D&D Beyond character (manual JSON import)
+Example: import a D&D Beyond character (manual JSON import)
 curl -X POST http://localhost:3000/providers/ddb/call -H "Content-Type: application/json" -d '{"name":"ddb_import_character_json","args":{"json": <paste character JSON here>}}'
 
-Use the returned id for subsequent calls:
-- character_get_overview
-- character_list_spells
-- character_list_inventory
-- character_export_markdown
+Use the returned id for subsequent calls (character_get_overview, character_list_spells, character_list_inventory, character_export_markdown).
 
-If additional providers (e.g. Open5e) are added later, they will be listed via GET /providers.
+Notes
+- The Kanka provider and its OAuth flows have been removed from this project. The server is provider-agnostic; to add new providers (e.g. Open5e), add them under src/providers and register in src/providers/index.js.
