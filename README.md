@@ -1,69 +1,270 @@
-# MCP Server
+# D&D Beyond MCP Server
 
-Minimal Model Context Protocol (MCP) proxy for the REST API using Node.js and Express.
+Model Context Protocol (MCP) server for D&D Beyond character management using Node.js and Express.
+
+## Overview
+
+This server provides a provider-agnostic architecture for TTRPG tools. Currently implements D&D Beyond character import via JSON paste (no scraping or API calls).
+
+## Features
+
+- Import D&D Beyond characters from JSON
+- Normalize character data to a common model
+- Export characters to Markdown
+- Query character stats, spells, and inventory
+- Extensible provider system for future additions
 
 ## Setup
 
-- Node.js 20+.
-- Install dependencies: `npm install`.
-- Provide a token via `export KANKA_API_TOKEN=your_token_here` (or edit `config.js`).
-- Optional OAuth: set `KANKA_CLIENT_ID`, `KANKA_CLIENT_SECRET`, and `KANKA_REDIRECT_URI` (e.g. `http://localhost:5000/oauth/callback`).
+**Requirements:**
+- Node.js 20+
 
-## Run modes
+**Installation:**
+```bash
+npm install
+```
 
-- STDIO (CLI/IDE): `node index.js --stdio` or `npm start -- --stdio`. This is also the default when `PORT` is unset.
-- HTTP / Streamable MCP: `PORT=5000 npm start` (defaults to `5000`). You can pass `?token=<your_token>` on the first call if you do not want to rely on the env var.
+## Run Modes
 
-## OAuth helper endpoints
-- `GET /oauth/login`: redirect to provider for OAuth consent (requires `KANKA_CLIENT_ID` and `KANKA_REDIRECT_URI`).
-- `GET /oauth/callback`: exchanges the returned `code` for `access_token` and `refresh_token` and returns the payload.
-- `GET /.well-known/oauth-authorization-server`: OAuth metadata for MCP clients.
-- `GET /oauth/authorize`: starts OAuth flow (proxying through provider at `app.kanka.io`).
-- `POST /oauth/token`: exchanges authorization codes (and refresh tokens) for access tokens via `app.kanka.io`.
+### HTTP Server (Recommended)
+```bash
+PORT=5000 npm start
+# Or with default port
+npm start
+```
 
-You can also override provider OAuth settings per request by passing `kanka_client_id`, `kanka_client_secret`, `kanka_redirect_uri`, and/or `scope` as query parameters (authorize/login) or form fields (token). When omitted, no scope is sent to provider (recommended).
+The server will start on port 5000 (or specified PORT) and expose REST and MCP endpoints.
 
-## MCP endpoints
+## API Endpoints
 
-The server exposes MCP-compatible transports. Clients handle initialization and tool calls; no custom JSON endpoints are required.
+### Provider Discovery (REST)
 
-Streamable HTTP (recommended, protocol 2025-11-25):
-- `GET /mcp` (or `/` when the client expects an SSE stream) for the SSE stream (send `Authorization: Bearer <token>` or `?token=<token>`)
-- `POST /mcp` for JSON-RPC requests (send `Authorization: Bearer <token>` or `?token=<token>` on the first initialize call if not using the env var)
-- `DELETE /mcp` to terminate a session
+#### List All Providers
+```bash
+GET /providers
+```
+Returns available providers with their id, name, and description.
 
-Deprecated HTTP+SSE fallback (protocol 2024-11-05):
-- `GET /sse` to open the SSE stream (send `Authorization: Bearer <token>` or `?token=<token>`)
-- `POST /message?sessionId=<id>` to send JSON-RPC
-- `POST /messages?sessionId=<id>` alias for legacy clients
+#### Get Provider Tools
+```bash
+GET /providers/:id/tools
+```
+Returns tools exposed by a specific provider.
 
-Token handling:
-- Set `KANKA_API_TOKEN` in the environment for a default token.
-- Pass `apiToken` in tool arguments for per-call tokens.
-- Supply `Authorization: Bearer <token>` (preferred) or `?token=<token>` when initiating HTTP/SSE sessions if you prefer per-session tokens.
+#### Call Provider Tool
+```bash
+POST /providers/:id/call
+Content-Type: application/json
 
-Environment
-- Set provider API tokens in environment variables or in `config.js` as needed per provider.
+{
+  "name": "tool_name",
+  "args": { ... }
+}
+```
 
-Getting started
-- Install dependencies: npm install
-- Start server: npm start
+### MCP Endpoint
 
-Providers
-This server exposes a list of providers and their tools:
+#### List Tools
+```bash
+POST /mcp
+Content-Type: application/json
 
-- GET /providers
-  - returns available providers (id, name, description)
-- GET /providers/:id/tools
-  - returns tools exposed by a provider
-- POST /providers/:id/call
-  - body: { name: string, args?: object }
-  - calls a provider tool
+{ "type": "ListToolsRequest" }
+```
 
-Example: import a D&D Beyond character (manual JSON import)
-curl -X POST http://localhost:3000/providers/ddb/call -H "Content-Type: application/json" -d '{"name":"ddb_import_character_json","args":{"json": <paste character JSON here>}}'
+#### Call Tool
+```bash
+POST /mcp
+Content-Type: application/json
 
-Use the returned id for subsequent calls (character_get_overview, character_list_spells, character_list_inventory, character_export_markdown).
+{
+  "type": "CallToolRequest",
+  "providerId": "ddb",
+  "name": "tool_name",
+  "args": { ... }
+}
+```
 
-Notes
-- The Kanka provider and its OAuth flows have been removed from this project. The server is provider-agnostic; to add new providers (e.g. Open5e), add them under src/providers and register in src/providers/index.js.
+## D&D Beyond Provider
+
+The `ddb` provider handles D&D Beyond character JSON imports.
+
+### Available Tools
+
+#### `ddb_import_character_json`
+Import and normalize a D&D Beyond character from JSON.
+
+**Example:**
+```bash
+curl -X POST http://localhost:5000/providers/ddb/call \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "ddb_import_character_json",
+    "args": {
+      "json": {
+        "id": "12345",
+        "name": "Lira Swift",
+        "race": "Half-Elf",
+        "classes": [{"name": "Bard", "level": 5}],
+        "abilities": {
+          "Strength": 8,
+          "Dexterity": 14,
+          "Constitution": 12,
+          "Intelligence": 10,
+          "Wisdom": 11,
+          "Charisma": 18
+        },
+        "ac": 15,
+        "hp": 38,
+        "items": [
+          {"name": "Shortsword", "qty": 1},
+          {"name": "Lute", "qty": 1}
+        ],
+        "spells": [
+          {"name": "Cure Wounds", "level": 1, "prepared": true},
+          {"name": "Faerie Fire", "level": 1}
+        ]
+      }
+    }
+  }'
+```
+
+**Response:**
+```json
+{
+  "result": {
+    "id": "character-id",
+    "character": { ... }
+  }
+}
+```
+
+#### `character_get_overview`
+Get character summary (name, classes, level, AC, HP).
+
+**Example:**
+```bash
+curl -X POST http://localhost:5000/providers/ddb/call \
+  -H "Content-Type: application/json" \
+  -d '{"name": "character_get_overview", "args": {"id": "character-id"}}'
+```
+
+#### `character_list_spells`
+Get all spells for a character.
+
+**Example:**
+```bash
+curl -X POST http://localhost:5000/providers/ddb/call \
+  -H "Content-Type: application/json" \
+  -d '{"name": "character_list_spells", "args": {"id": "character-id"}}'
+```
+
+#### `character_list_inventory`
+Get character's equipment and items.
+
+**Example:**
+```bash
+curl -X POST http://localhost:5000/providers/ddb/call \
+  -H "Content-Type: application/json" \
+  -d '{"name": "character_list_inventory", "args": {"id": "character-id"}}'
+```
+
+#### `character_export_markdown`
+Export complete character sheet as Markdown.
+
+**Example:**
+```bash
+curl -X POST http://localhost:5000/providers/ddb/call \
+  -H "Content-Type: application/json" \
+  -d '{"name": "character_export_markdown", "args": {"id": "character-id"}}'
+```
+
+## Character Storage
+
+Characters are stored as JSON files in `data/characters/` directory. Each character is saved with its ID as the filename: `{id}.json`
+
+## Adding New Providers
+
+The server is designed to be provider-agnostic. To add a new provider:
+
+1. Create a new directory in `src/providers/your-provider/`
+2. Implement the provider interface (see `src/providers/provider.js`)
+3. Register it in `src/providers/index.js`
+
+Example provider structure:
+```javascript
+const provider = {
+  id: 'your-provider',
+  name: 'Your Provider Name',
+  description: 'Provider description',
+  tools: [
+    {
+      name: 'tool_name',
+      description: 'Tool description',
+      inputSchema: { type: 'object', properties: {...}, required: [] }
+    }
+  ],
+  async callTool(name, args) {
+    // Implementation
+  }
+};
+
+module.exports = provider;
+```
+
+## Development
+
+### Running Tests
+```bash
+npm test
+```
+
+### Manual Test Run
+```bash
+node test/run-tests.js
+```
+
+## Project Structure
+
+```
+.
+├── index.js                    # Express server entry point
+├── config.js                   # Provider configuration
+├── src/
+│   ├── models/
+│   │   └── character.js        # Character normalization
+│   ├── providers/
+│   │   ├── index.js           # Provider registry
+│   │   ├── provider.js        # Provider interface
+│   │   └── ddb/
+│   │       └── ddbProvider.js # D&D Beyond implementation
+│   └── storage/
+│       └── characterStore.js  # File-based storage
+├── data/
+│   └── characters/            # Character JSON files
+└── tests/
+    ├── fixtures/              # Test data
+    └── *.test.js             # Test files
+```
+
+## Deployment
+
+Use the included `run.ps1` PowerShell script for auto-restart on git changes:
+
+```powershell
+.\run.ps1
+```
+
+Features:
+- Auto-pull from git every 5 minutes
+- Restart server on changes
+- Restart on crash
+- Exposes port 5000 via Tailscale funnel
+
+## License
+
+MIT
+
+## Contributing
+
+See `AGENTS.md` for development guidelines and git workflow.

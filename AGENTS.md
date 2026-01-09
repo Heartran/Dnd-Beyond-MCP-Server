@@ -36,6 +36,7 @@
 
 | Agent | GIT_COMMITTER_NAME / GIT_AUTHOR_NAME | GIT_COMMITTER_EMAIL / GIT_AUTHOR_EMAIL |
 |-------|:--------------------------------------:|----------------------------------------|
+| Claude | Claude | claude@users.noreply.github.com |
 | Codex | Codex                                | codex@users.noreply.github.com         |
 | Gemini | Gemini | gemini-code-assist@users.noreply.github.com |
 
